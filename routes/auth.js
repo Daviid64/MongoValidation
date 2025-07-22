@@ -2,14 +2,14 @@ import express from 'express';
 import { register, login, verifyEmail, requestPasswordReset, resetPassword } from '../controllers/authController.js';
 import { authorize, protect } from '../middlewares/authMiddleware.js';
 import { createUser } from '../controllers/user.controller.js';
-import { createUserSchema } from '../validations/user.validation.js';
+import { createUserSchema} from '../validations/user.validation.js';
 import { validate } from '../middlewares/validate.js';
-
+import {loginSchema } from '../validations/user.validation.js';
 
 const router = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register',validate(createUserSchema), register);
+router.post('/login', validate(loginSchema),login);
 router.get('/verify/:token', verifyEmail);
 
 router.post('/password-reset-request', requestPasswordReset);

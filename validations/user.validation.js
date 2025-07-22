@@ -1,57 +1,16 @@
-import Joi from 'joi';
+import joi from 'joi';
 
-export const createUserSchema = Joi.object({
-name: Joi.string()
-    .min(2)
-    .max(50)
-    .required()
-    .empty()
-    .trim()
-    .messages({
-        'string.empty': 'Le prénom est vide',
-        'string.min':'Le prénom doit contenir au moins 2 caractères.',
-    }),
-    lastname: Joi.string()
-    .min(2)
-    .max(50)
-    .required()
-    .empty()
-    .trim()
-    .messages({
-        'string.empty': 'Le nom est vide',
-        'string.min':'Le nom doit contenir au moins 2 caractères.',
-    }),
-    email: Joi.string()
-    .email({tlds: {allow: false}})
-    .required()
-    .messages({
-        'string.email': `Le format de l'email est invalide.`,
-        'string.empty': `L'email est vide.`,
-    }),
-    password:Joi.string()
-        .min(6)
-        .required()
-        .messages({
-    'string.min': 'Le mot de passe doit contenir au moins 6 caractères.',
-    'string.empty': 'Le mot de passe est requis.',
-    }),
-    ConfirmPassword:Joi.string()
-        .min(6)
-        .required()
-        .messages({
-    'string.min': 'Le mot de passe doit contenir au moins 6 caractères.',
-    'string.empty': 'La confirmation du mot de passe est requise.',
-    }),
-    role:Joi.string()
-        .min(6)
-        .messages({
-    'string.min': '',
-    'string.empty': '',
-    }),
-    avatar:Joi.string()
-        .min(6)
-        .messages({
-    'string.min': '',
-    'string.empty': '',
-    }),
-});
+export const createUserSchema = joi.object({
+    name: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Le prénom est requis.'}),
+    lastname: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Le nom est requis.'}),
+    email: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'L\'email est requis.'}),
+    password: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Le mot de passe est requis.'}),
+    confirmPassword: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Les mots de passes ne correspondent pas.'}),
+    role: joi.string(),
+    avatar: joi.string(),
+})
+
+export const loginSchema = joi.object({
+    email: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'L\'email est requis.'}),
+    password: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Le mot de passe est requis.'}),
+})
