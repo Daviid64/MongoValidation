@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Guide complet : Intégrer Joi dans un projet Express + MongoDB (ESM)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3 {
+      color: #2c3e50;
+      margin-top: 1.5em;
+    }
+
+    h1 {
+      border-bottom: 3px solid #2980b9;
+      padding-bottom: 0.3em;
+    }
+
+    p, ul {
+      font-size: 1.1em;
+    }
+
+    ul {
+      margin-left: 1.5em;
+    }
+
+    ul li {
+      margin-bottom: 0.5em;
+    }
+
+    pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.95em;
+      line-height: 1.4;
+      margin-top: 1em;
+      margin-bottom: 1.5em;
+    }
+
+    code {
+     
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2em 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+      font-weight: 600;
+    }
+
+    tbody tr:hover {
+      background-color: #f1f9ff;
+    }
+
+    .note {
+      background: #dff0d8;
+      border-left: 6px solid #3c763d;
+      padding: 12px 15px;
+      margin: 1.5em 0;
+      color: #3c763d;
+      font-style: italic;
+    }
+
+    .warning {
+      background: #f2dede;
+      border-left: 6px solid #a94442;
+      padding: 12px 15px;
+      margin: 1.5em 0;
+      color: #a94442;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Intégrer Joi dans un projet Express + MongoDB (ESM)</h1>
+
+  <p>Ce guide vous accompagne pas à pas pour intégrer la validation des données avec <strong>Joi</strong> dans une application Node.js utilisant :</p>
+  <ul>
+    <li><strong>Express.js</strong> pour gérer les routes et requêtes HTTP</li>
+    <li><strong>MongoDB</strong> via <strong>Mongoose</strong> pour la base de données</li>
+    <li><strong>ECMAScript Modules (ESM)</strong> pour une organisation moderne des imports/exports</li>
+    <li>Une structure projet claire avec des dossiers dédiés (<code>controllers</code>, <code>routes</code>, <code>models</code>, etc.)</li>
+  </ul>
+
+  <h2>1. Installation de Joi</h2>
+  <p>La première étape consiste à installer la bibliothèque Joi, qui permet de définir et appliquer des schémas de validation simples et robustes.</p>
+  <pre><code>npm install joi</code></pre>
+
+  <h2>2. Organisation du projet (exemple de structure)</h2>
+  <p>Voici une organisation classique d’un projet Express + MongoDB où nous allons intégrer la validation :</p>
+  <pre><code>project/
+├── controllers/
+│   └── user.controller.js      # Logique métier, actions sur les utilisateurs
+├── routes/
+│   └── user.routes.js          # Définition des routes utilisateur
+├── models/
+│   └── user.model.js           # Schéma Mongoose des utilisateurs
+├── validations/
+│   └── user.validation.js      # Schémas Joi pour valider les données
+├── middlewares/
+│   └── validate.js             # Middleware générique de validation
+├── server.js                   # Point d’entrée de l’application
+</code></pre>
+
+  <h2>3. Étape 1 – Créer un schéma de validation avec Joi</h2>
+  <p>Dans <code>validations/user.validation.js</code>, on définit un schéma Joi pour contrôler les données d’un utilisateur lors de la création :</p>
+  <pre><code>import Joi from 'joi';
+
+export const createUserSchema = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .required()
+    .messages({
+      'string.empty': 'Le nom est requis.',
+      'string.min': 'Le nom doit contenir au moins 2 caractères.',
+    }),
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      'string.email': 'Le format de l\'email est invalide.',
+      'string.empty': 'L\'email est requis.',
+    }),
+  password: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      'string.min': 'Le mot de passe doit contenir au moins 6 caractères.',
+      'string.empty': 'Le mot de passe est requis.',
+    })
+});
+</code></pre>
+
+  <p><em>Note :</em> Les messages personnalisés aident à rendre les erreurs plus compréhensibles pour l’utilisateur.</p>
+
+  <h2>4. Étape 2 – Valider les données entrantes</h2>
+  <p>Deux méthodes principales pour utiliser Joi dans votre application :</p>
+
+  <h3>Option A – Validation directe dans le controller</h3>
+  <p>Dans ce cas, la validation s’effectue directement dans la fonction du controller avant de créer l’utilisateur :</p>
+  <pre><code>import User from '../models/user.model.js';
+import { createUserSchema } from '../validations/user.validation.js';
+
+export const createUser = async (req, res) => {
+  const { error, value } = createUserSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  try {
+    const user = new User(value);
+    await user.save();
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur lors de la création de l\'utilisateur.' });
+  }
+};
+</code></pre>
+
+  <h3>Option B – Validation via un middleware réutilisable</h3>
+  <p>Pour éviter de répéter le code de validation dans chaque controller, créez un middleware générique :</p>
+  <pre><code>export const validate = (schema) => (req, res, next) => {
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  // On stocke les données validées dans req.validatedBody
+  req.validatedBody = value;
+  next();
+};
+</code></pre>
+
+  <p>Ensuite, dans les routes, appliquez ce middleware :</p>
+  <pre><code>import express from 'express';
+import { createUser } from '../controllers/user.controller.js';
+import { createUserSchema } from '../validations/user.validation.js';
+import { validate } from '../middlewares/validate.js';
+
+const router = express.Router();
+
+router.post('/', validate(createUserSchema), createUser);
+
+export default router;
+</code></pre>
+
+  <p>Enfin, dans le controller, récupérez les données validées :</p>
+  <pre><code>export const createUser = async (req, res) => {
+  try {
+    const user = new User(req.validatedBody);
+    await user.save();
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur serveur lors de la création de l\'utilisateur.' });
+  }
+};
+</code></pre>
+
+  <h2>5. Résumé rapide</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>npm install joi</code></td>
+        <td>Installer la bibliothèque Joi</td>
+      </tr>
+      <tr>
+        <td>Créer un fichier <code>user.validation.js</code></td>
+        <td>Définir les schémas de validation pour chaque modèle</td>
+      </tr>
+      <tr>
+        <td>Option 1</td>
+        <td>Valider directement dans le controller avec <code>schema.validate(req.body)</code></td>
+      </tr>
+      <tr>
+        <td>Option 2</td>
+        <td>Créer un middleware <code>validate.js</code> pour valider dans les routes</td>
+      </tr>
+      <tr>
+        <td>Utiliser <code>req.validatedBody</code></td>
+        <td>Pour manipuler des données déjà validées dans les controllers</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>6. Exemple de requête POST /api/users</h2>
+  <pre><code>{
+  "name": "alejandro",
+  "email": "alejandro@example.com",
+  "password": "monmotdepasse"
+}
+</code></pre>
+
+  <h2>7. Bonus : valider d'autres parties de la requête</h2>
+  <p>Avec Joi, vous pouvez aussi valider :</p>
+  <ul>
+    <li><code>req.params</code> (paramètres d’URL)</li>
+    <li><code>req.query</code> (paramètres de requête)</li>
+    <li>Des tableaux, objets imbriqués, valeurs conditionnelles, etc.</li>
+  </ul>
+  <pre><code>const schema = Joi.object({
+  tags: Joi.array()
+    .items(Joi.string().min(2))
+    .required()
+});
+</code></pre>
+
+  <div class="note">
+    <strong>Astuce :</strong> Pour valider <code>req.params</code> ou <code>req.query</code>, adaptez simplement la validation dans le middleware, par exemple :<br/>
+    <code>schema.validate(req.params)</code> ou <code>schema.validate(req.query)</code>.
+  </div>
+
+  <h2>Licence</h2>
+  <p>Ce guide est libre d'utilisation dans vos projets personnels ou professionnels.</p>
+
+</body>
+</html>
