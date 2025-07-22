@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import sendEmail from "../utils/sendEmail.js";
 import dotenv from "dotenv";
 import crypto from "crypto";
+import { createUserSchema } from '../validations/user.validation.js';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;

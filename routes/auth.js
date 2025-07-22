@@ -1,6 +1,10 @@
 import express from 'express';
 import { register, login, verifyEmail, requestPasswordReset, resetPassword } from '../controllers/authController.js';
 import { authorize, protect } from '../middlewares/authMiddleware.js';
+import { createUser } from '../controllers/user.controller.js';
+import { createUserSchema } from '../validations/user.validation.js';
+import { validate } from '../middlewares/validate.js';
+
 
 const router = express.Router();
 
@@ -10,6 +14,8 @@ router.get('/verify/:token', verifyEmail);
 
 router.post('/password-reset-request', requestPasswordReset);
 router.post('/reset-password/:token', resetPassword);
+router.post('/', validate(createUserSchema), createUser);
+
 
 router.get('/user-profile', protect, (req, res) => {
   res.json({ message: `Bienvenue ${req.user.name}` });
