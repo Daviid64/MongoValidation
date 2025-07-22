@@ -5,16 +5,28 @@ name: Joi.string()
     .min(2)
     .max(50)
     .required()
+    .empty()
+    .trim()
     .messages({
-        'string.empty': 'Le nom est requis',
+        'string.empty': 'Le prénom est vide',
+        'string.min':'Le prénom doit contenir au moins 2 caractères.',
+    }),
+    lastname: Joi.string()
+    .min(2)
+    .max(50)
+    .required()
+    .empty()
+    .trim()
+    .messages({
+        'string.empty': 'Le nom est vide',
         'string.min':'Le nom doit contenir au moins 2 caractères.',
     }),
     email: Joi.string()
     .email({tlds: {allow: false}})
     .required()
     .messages({
-        'string.email': 'Le format de l\'email est invalide.',
-        'string.empty': 'L\'email est requis.',
+        'string.email': `Le format de l'email est invalide.`,
+        'string.empty': `L'email est vide.`,
     }),
     password:Joi.string()
         .min(6)
@@ -22,5 +34,24 @@ name: Joi.string()
         .messages({
     'string.min': 'Le mot de passe doit contenir au moins 6 caractères.',
     'string.empty': 'Le mot de passe est requis.',
-    })
+    }),
+    ConfirmPassword:Joi.string()
+        .min(6)
+        .required()
+        .messages({
+    'string.min': 'Le mot de passe doit contenir au moins 6 caractères.',
+    'string.empty': 'La confirmation du mot de passe est requise.',
+    }),
+    role:Joi.string()
+        .min(6)
+        .messages({
+    'string.min': '',
+    'string.empty': '',
+    }),
+    avatar:Joi.string()
+        .min(6)
+        .messages({
+    'string.min': '',
+    'string.empty': '',
+    }),
 });
