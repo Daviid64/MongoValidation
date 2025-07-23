@@ -13,4 +13,4 @@ export const createUserSchema = joi.object({
 export const loginSchema = joi.object({
     email: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'L\'email est requis.'}),
     password: joi.string().min(3).max(50).required().empty().trim().message({'string.empty': 'Le mot de passe est requis.'}),
-})
+})  

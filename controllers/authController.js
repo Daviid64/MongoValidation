@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import sendEmail from "../utils/sendEmail.js";
 import dotenv from "dotenv";
 import crypto from "crypto";
-import { createUserSchema } from '../validations/user.validation.js';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -227,3 +226,17 @@ export async function resetPassword(req, res) {
     res.status(500).json({ message: "Erreur serveur." });
   }
 }
+ export async function logout(req, res) {
+    try{
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+      });
+
+      res.status(200).json({message: "Déconnecté avec succès"});
+    }catch(error){
+      console.error({message: "Erreur lors de la déconnection"})
+    }
+  }
+
