@@ -13,8 +13,7 @@ router.get('/verify/:token', verifyEmail);
 
 router.post('/password-reset-request', requestPasswordReset);
 router.post('/reset-password/:token', resetPassword);
-router.post('/', validate(createUserSchema), createUser);
-router.post('/logout',logout)
+router.post('/logout',logout);
 
 
 router.get('/user-profile', protect, (req, res) => {

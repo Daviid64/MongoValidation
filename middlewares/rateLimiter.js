@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 5, // Limite à 5 tentatives de login par IP
+  limit: 15, // Limite à 15 tentatives de login par IP
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: {
